@@ -1,0 +1,46 @@
+
+
+UPDATE DATABASE BY RUNNING SQL => goto phpmyadmin =>  SQL Tab, paste the following query
+=========================================================================================
+
+
+CREATE TABLE `mpv` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `platenumber` varchar(100) DEFAULT NULL,
+  `status` tinyint(4) DEFAULT NULL,
+  `is_deleted` tinyint(4) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `mpv` (`id`, `name`, `date`, `platenumber`, `status`, `is_deleted`) VALUES
+(3, 'Heather Stevens', '2019-10-26', '34', 4, 0),
+(4, 'asdf', '2019-10-26', '34', 4, 0);
+
+
+CREATE TABLE `mpv_trans` (
+  `id` int(11) NOT NULL,
+  `date` date DEFAULT NULL,
+  `time` time DEFAULT NULL,
+  `mpv_id` int(11) DEFAULT NULL,
+  `evo_name` varchar(100) DEFAULT NULL,
+  `appointment` varchar(100) DEFAULT NULL,
+  `route` varchar(100) DEFAULT NULL,
+  `type` tinyint(4) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `mpv_trans` (`id`, `date`, `time`, `mpv_id`, `evo_name`, `appointment`, `route`, `type`) VALUES
+(3, '1974-03-01', '04:14:00', 4, 'Pearl Calderon', 'Aut aute earum eveni', 'Ipsa et ducimus to', 1);
+
+ALTER TABLE `mpv`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `mpv_trans`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `mpv`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+ALTER TABLE `mpv_trans`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
