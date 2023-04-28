@@ -83,8 +83,8 @@ CONCAT(bi2.lastname, ', ', bi2.firstname) as head
                             <label>
                                 <select id="gender" class="form-control">
                                     <option value="">Select Gender</option>
-                                    <option value="M">Male</option>
-                                    <option value="F">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
                             </label>
                         </div>
@@ -156,7 +156,7 @@ CONCAT(bi2.lastname, ', ', bi2.firstname) as head
                                 <td><?php echo $fetch['fullname']?></td>
                                 <td><?php echo $fetch['evacAge']?></td>
                                 <td><?php echo $fetch['evacBrgy']?></td>
-                                <td id="<?php echo $fetch['evacGender']?>"><?php echo $fetch['evacGender'] === '1' ? 'Male' : 'Female' ?></td>
+                                <td><?php echo $fetch['evacGender'] === '1' ? 'Male' : 'Female' ?></td>
                                 <td><?php echo $fetch['remarks']?></td>
                                 <td><?php echo $evacuationCenter['center']?></td>
                                 <td><?php echo $fetch['calamity']?></td>
@@ -172,39 +172,47 @@ CONCAT(bi2.lastname, ', ', bi2.firstname) as head
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.68/vfs_fonts.js"></script>
 <script>
-    document.getElementById('generate-pdf').addEventListener('click', generatePDF);
-    function generatePDF() {
-        // Get table data
-        const table = document.getElementById('myTable');
-        const data = [];
-        for (let i = 0; i < table.rows[0].cells.length; i++) {
-            data[0] = data[0] || [];
-            data[0].push(table.rows[0].cells[i].textContent);
-        }
-        for (let i = 1; i < table.rows.length; i++) {
-            const row = [];
-            for (let j = 0; j < table.rows[i].cells.length; j++) {
-                row.push(table.rows[i].cells[j].textContent);
-            }
-            data.push(row);
-        }
-        const docDefinition = {
-            content: [
-                { text: 'Evacuation Report', style: 'header' },
-                { text: '\n' },
-                { table: { headerRows: 1, body: data } }
-            ],
-            styles: {
-                header: { fontSize: 18, bold: true }
-            }
-        };
-
-        pdfMake.createPdf(docDefinition).download('evacuation_list.pdf');
-
-    }
-
     $(document).ready(function() {
         const table = $('#myTable').DataTable();
+        const generatePDF = () => {
+            const data = table.rows({ 'search': 'applied', 'page': 'all', 'order': 'applied' }).data().toArray();
+
+            const tableHeader = ['Name', 'Age', 'Brgy', 'Gender', 'Remark', 'Evacuation Center', 'Disaster'];
+
+            const docDefinition = {
+                content: [
+                    { text: 'Evacuation List', style: 'header' },
+                    { text: '\n' },
+                    {
+                        style: 'table',
+                        table: {
+                            headerRows: 1, // add this property to include the header row
+                            widths: ['auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'],
+                            body: data
+                        }
+                    }
+                ],
+                header: {
+                    columns: tableHeader.map(header => ({ text: header, style: 'tableHeader' })),
+                    style: 'tableHeader'
+                },
+                styles: {
+                    header: { fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 20] },
+                    table: { margin: [0, 5, 0, 15], fontSize: 12, alignment: 'center' },
+                    tableHeader: {
+                        bold: true,
+                        fontSize: 13,
+                        color: 'white',
+                        fillColor: '#2d4154',
+                        alignment: 'center',
+                    },
+                },
+            };
+
+            pdfMake.createPdf(docDefinition).download('evacuation_list.pdf');
+        };
+
+        $('#generate-pdf').on('click', generatePDF);
 
         $('#age-filter').change(function() {
             const ageRange = $(this).val();
@@ -217,18 +225,22 @@ CONCAT(bi2.lastname, ', ', bi2.firstname) as head
                 table.columns(1).search('^(' + minAge + '|' + (minAge+1) + '|' + (minAge+2) + '|...|' + (maxAge-2) + '|' + (maxAge-1) + '|' + maxAge + ')$', true, false).draw();
             }
         });
-
-        ['gender', 'brgy', 'center', 'calamity'].forEach(function(id, index) {
-            $('#' + id).on('change', function() {
-                const data = $(this).val();
-                if (id === 'gender') {
-                    data = '^' + data.charAt(0);
-                    table.column(3).search(data, true, false).draw();
-                } else {
-                    table.column(index + 2).search(data).draw();
-                }
-            });
+        $('#gender').on('change', function() {
+            var selectedGender = $(this).val(); // get selected gender value
+            var regex = '\\b' + selectedGender + '\\b'; // add word boundaries to search string
+            $('#myTable').DataTable().column(3).search(regex, true, false).draw(); // filter data based on selected gender
         });
+        // Add event listeners to the dropdown filters
+        $('#brgy, #center, #calamity').change(function() {
+            const brgy = $('#brgy').val();
+            const center = $('#center').val();
+            const calamity = $('#calamity').val();
+
+            table.columns(2).search(brgy).draw();
+            table.columns(5).search(center).draw();
+            table.columns(6).search(calamity).draw();
+        });
+
         $(function() {
             const table = $('#myTable').DataTable();
 
@@ -238,5 +250,4 @@ CONCAT(bi2.lastname, ', ', bi2.firstname) as head
             });
         });
     });
-
 </script>
